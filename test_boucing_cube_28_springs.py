@@ -81,12 +81,19 @@ springs += [
     Spring(long_diag_length, k, masses[3], masses[4])
 ]
 
+KE_list = []
+PE_list = []
+TE_list = []
+
 def simulation_step(masses, springs, dt):
     # Reset forces on each mass
     for mass in masses:
         mass.f = np.zeros(3, dtype=float)
         mass.f += mass.m * g  # Gravity
     
+    KE = sum([0.5 * mass.m * np.linalg.norm(mass.v)**2 for mass in masses])
+    PE = sum([mass.m * g[2] * mass.p[2] for mass in masses])
+
     # Calculate spring forces
     for spring in springs:
         delta_p = spring.m1.p - spring.m2.p
@@ -94,6 +101,9 @@ def simulation_step(masses, springs, dt):
         direction = delta_p / delta_length
         force_magnitude = spring.k * (delta_length - spring.L0)
         force = force_magnitude * direction
+
+        PE_spring = 0.5 * spring.k * (delta_length - spring.L0)**2
+        PE += PE_spring
 
         # Apply spring force to masses
         spring.m1.f -= force
@@ -109,6 +119,12 @@ def simulation_step(masses, springs, dt):
         if mass.p[2] < 0:
             mass.p[2] = 0
             mass.v[2] = -damping * mass.v[2]  # Some damping on collision
+
+    TE = KE + PE
+    KE_list.append(KE)
+    PE_list.append(PE)
+    TE_list.append(TE)
+
 
 # Visualization setup
 fig = plt.figure()
@@ -171,5 +187,21 @@ def animate(i):
 ani = animation.FuncAnimation(fig, animate, frames=1000, init_func=init, blit=False, interval=5)
 
 plt.show()
+
+N = 1000
+time_list = np.arange(0, N*dt, dt)
+
+plt.figure()
+plt.plot(time_list, KE_list[0:N], label='Kinetic Energy')
+plt.plot(time_list, PE_list[0:N], label='Potential Energy')
+plt.plot(time_list, TE_list[0:N], label='Total Energy')
+plt.xlabel('Time (s)')
+plt.ylabel('Energy (J)')
+plt.title('Energy vs Time for a Bouncing Cube')
+plt.legend()
+plt.show()
+
+print("Length of KE_list: ", len(KE_list))
+
 
 
