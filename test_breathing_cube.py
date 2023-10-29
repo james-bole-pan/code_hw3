@@ -88,14 +88,23 @@ springs += [
     Spring(long_diag_length, k, masses[3], masses[4])
 ]
 
-faces = [
-    [masses[0].p, masses[1].p, masses[5].p, masses[4].p],  # Bottom face
-    [masses[2].p, masses[3].p, masses[7].p, masses[6].p],  # Top face
-    [masses[0].p, masses[1].p, masses[3].p, masses[2].p],  # Front face
-    [masses[4].p, masses[5].p, masses[7].p, masses[6].p],  # Back face
-    [masses[0].p, masses[4].p, masses[6].p, masses[2].p],  # Left face
-    [masses[1].p, masses[5].p, masses[7].p, masses[3].p]   # Right face
-]
+
+def get_cube_faces():
+    return [
+        [masses[0].p, masses[1].p, masses[5].p, masses[4].p],  # Bottom face
+        [masses[2].p, masses[3].p, masses[7].p, masses[6].p],  # Top face
+        [masses[0].p, masses[1].p, masses[3].p, masses[2].p],  # Front face
+        [masses[4].p, masses[5].p, masses[7].p, masses[6].p],  # Back face
+        [masses[0].p, masses[4].p, masses[6].p, masses[2].p],  # Left face
+        [masses[1].p, masses[5].p, masses[7].p, masses[3].p]   # Right face
+    ]
+
+def get_floor_tile():
+    floor_size = 2.5
+    return [[-floor_size, -floor_size, 0], 
+            [floor_size, -floor_size, 0], 
+            [floor_size, floor_size, 0], 
+            [-floor_size, floor_size, 0]]
 
 KE_list = []
 PE_list = []
@@ -161,6 +170,12 @@ points = [ax.plot([], [], [], 'ro')[0] for _ in range(8)]
 lines = [ax.plot([], [], [], 'b-')[0] for _ in range(28)] 
 shadows = [ax.plot([], [], [], 'k-')[0] for _ in range(28)] 
 
+cube_faces_collection = Poly3DCollection(get_cube_faces(), color='cyan', alpha=0.25)
+ax.add_collection3d(cube_faces_collection)
+
+floor_tile_collection = Poly3DCollection([get_floor_tile()], color='gray', alpha=0.5)
+ax.add_collection3d(floor_tile_collection)
+
 ax.set_xlim([-2, 2]) 
 ax.set_ylim([-2, 2])
 ax.set_zlim([0, 4])
@@ -188,7 +203,7 @@ def animate(i):
     for mass, point in zip(masses, points):
         x, y, z = mass.p
         point.set_data([x], [y])
-        point.set_3d_properties([z])  # Setting the Y value for 3D
+        point.set_3d_properties([z])  # Setting the Z value for 3D
 
     # Update the spring lines
     for spring, line in zip(springs, lines):
@@ -205,15 +220,11 @@ def animate(i):
         z_data = [0, 0]
         shadow.set_data(x_data, y_data)
         shadow.set_3d_properties(z_data)
-    
-    # # Initialize cube collection
-    # cube_collection = Poly3DCollection(faces, facecolors='cyan', edgecolor='k')
-    # ax.add_collection3d(cube_collection)
+        
+    # Update the cube faces
+    cube_faces_collection.set_verts(get_cube_faces())
 
-    # # Update cube collection inside the animate function
-    # cube_collection.set_verts(faces)
-
-    return points + lines
+    return points + lines + shadows
 
 ani = animation.FuncAnimation(fig, animate, frames=1000, init_func=init, blit=False, interval=5)
 
