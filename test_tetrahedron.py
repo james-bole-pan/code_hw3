@@ -5,10 +5,11 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 # Constants
 g = np.array([0.0, 0.0, -9.81])  # Gravity
-dt = 0.0001
+dt = 0.001
 k = 1000.0  # Spring constant
 L0 = 1.0  # Rest length of the spring
 damping = 0.999  # Damping constant
+
 
 # Mass Definition
 class Mass:
@@ -27,68 +28,24 @@ class Spring:
         self.m1 = m1
         self.m2 = m2
 
-# Initialize 8 masses for the cube
-half_L0 = L0/2
+# Initialize 4 masses for the tetrahedron
 drop_height = 2.0
+half_L0 = L0 / 2
 masses = [
-    Mass([-half_L0, -half_L0, -half_L0 + drop_height], [0.0, 0.0, 0.0]),  # 0
-    Mass([half_L0, -half_L0, -half_L0 + drop_height], [0.0, 0.0, 0.0]),   # 1
-    Mass([-half_L0, -half_L0, half_L0 + drop_height], [0.0, 0.0, 0.0]),   # 2
-    Mass([half_L0, -half_L0, half_L0 + drop_height], [0.0, 0.0, 0.0]),    # 3
-    Mass([-half_L0, half_L0, -half_L0 + drop_height], [0.0, 0.0, 0.0]),   # 4
-    Mass([half_L0, half_L0, -half_L0 + drop_height], [0.0, 0.0, 0.0]),    # 5
-    Mass([-half_L0, half_L0, half_L0 + drop_height], [0.0, 0.0, 0.0]),    # 6
-    Mass([half_L0, half_L0, half_L0 + drop_height], [0.0, 0.0, 0.0])      # 7
+    Mass([0, 0, drop_height], [0.0, 0.0, 0.0]),              # Top vertex
+    Mass([-half_L0, -half_L0, -half_L0 + drop_height], [0.0, 0.0, 0.0]),  # Base vertices
+    Mass([half_L0, -half_L0, -half_L0 + drop_height], [0.0, 0.0, 0.0]),
+    Mass([0, half_L0, -half_L0 + drop_height], [0.0, 0.0, 0.0])
 ]
 
-# Connect the masses with springs to form a cube
+# Connect the masses with springs to form a tetrahedron
 springs = [
-    Spring(L0, k, masses[0], masses[1]),  # Base square
+    Spring(L0, k, masses[0], masses[1]),
+    Spring(L0, k, masses[0], masses[2]),
+    Spring(L0, k, masses[0], masses[3]),
+    Spring(L0, k, masses[1], masses[2]),
     Spring(L0, k, masses[1], masses[3]),
-    Spring(L0, k, masses[3], masses[2]),
-    Spring(L0, k, masses[2], masses[0]),
-    Spring(L0, k, masses[4], masses[5]),  # Top square
-    Spring(L0, k, masses[5], masses[7]),
-    Spring(L0, k, masses[7], masses[6]),
-    Spring(L0, k, masses[6], masses[4]),
-    Spring(L0, k, masses[0], masses[4]),  # Vertical edges
-    Spring(L0, k, masses[1], masses[5]),
-    Spring(L0, k, masses[2], masses[6]),
-    Spring(L0, k, masses[3], masses[7])
-]
-short_diag_length = np.sqrt(2 * L0**2)
-springs += [
-    Spring(short_diag_length, k, masses[0], masses[3]),
-    Spring(short_diag_length, k, masses[1], masses[2]),
-    Spring(short_diag_length, k, masses[4], masses[7]),
-    Spring(short_diag_length, k, masses[5], masses[6]),
-    # Short Diagonals between opposite faces
-    Spring(short_diag_length, k, masses[0], masses[5]),
-    Spring(short_diag_length, k, masses[1], masses[4]),
-    Spring(short_diag_length, k, masses[2], masses[7]),
-    Spring(short_diag_length, k, masses[3], masses[6]),
-    Spring(short_diag_length, k, masses[0], masses[7]),
-    Spring(short_diag_length, k, masses[1], masses[6]),
-    Spring(short_diag_length, k, masses[2], masses[5]),
-    Spring(short_diag_length, k, masses[3], masses[4])
-]
-
-# Long Diagonals
-long_diag_length = np.sqrt(3 * L0**2)
-springs += [
-    Spring(long_diag_length, k, masses[0], masses[6]),
-    Spring(long_diag_length, k, masses[1], masses[7]),
-    Spring(long_diag_length, k, masses[2], masses[5]),
-    Spring(long_diag_length, k, masses[3], masses[4])
-]
-
-faces = [
-    [masses[0].p, masses[1].p, masses[5].p, masses[4].p],  # Bottom face
-    [masses[2].p, masses[3].p, masses[7].p, masses[6].p],  # Top face
-    [masses[0].p, masses[1].p, masses[3].p, masses[2].p],  # Front face
-    [masses[4].p, masses[5].p, masses[7].p, masses[6].p],  # Back face
-    [masses[0].p, masses[4].p, masses[6].p, masses[2].p],  # Left face
-    [masses[1].p, masses[5].p, masses[7].p, masses[3].p]   # Right face
+    Spring(L0, k, masses[2], masses[3])
 ]
 
 KE_list = []
@@ -135,17 +92,16 @@ def simulation_step(masses, springs, dt):
     PE_list.append(PE)
     TE_list.append(TE)
 
-
 # Visualization setup
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
-# Initialize 8 points for the cube's vertices
-points = [ax.plot([], [], [], 'ro')[0] for _ in range(8)]
+# Initialize 4 points for the tetrahedron's vertices
+points = [ax.plot([], [], [], 'ro')[0] for _ in range(4)]
 
-# Initialize 12 lines for the springs
-lines = [ax.plot([], [], [], 'b-')[0] for _ in range(28)] 
-shadows = [ax.plot([], [], [], 'k-')[0] for _ in range(28)] 
+# Initialize 6 lines for the springs
+lines = [ax.plot([], [], [], 'b-')[0] for _ in range(6)]
+shadows = [ax.plot([], [], [], 'k-')[0] for _ in range(6)]
 
 ax.set_xlim([-2, 2]) 
 ax.set_ylim([-2, 2])
@@ -153,7 +109,7 @@ ax.set_zlim([0, 4])
 ax.set_xlabel('X')
 ax.set_ylabel('Y')  
 ax.set_zlabel('Z')
-ax.set_title('Dropping and Bouncing Cube in 3D')
+ax.set_title('Dropping and Bouncing Tetrahedron in 3D')
 
 def init():
     for point in points:
@@ -191,13 +147,6 @@ def animate(i):
         z_data = [0, 0]
         shadow.set_data(x_data, y_data)
         shadow.set_3d_properties(z_data)
-    
-    # # Initialize cube collection
-    # cube_collection = Poly3DCollection(faces, facecolors='cyan', edgecolor='k')
-    # ax.add_collection3d(cube_collection)
-
-    # # Update cube collection inside the animate function
-    # cube_collection.set_verts(faces)
 
     return points + lines
 
@@ -214,11 +163,8 @@ plt.plot(time_list, PE_list, label='Potential Energy')
 plt.plot(time_list, TE_list, label='Total Energy')
 plt.xlabel('Time (s)')
 plt.ylabel('Energy (J)')
-plt.title('Energy vs Time for a Bouncing Cube')
+plt.title('Energy vs Time for a Bouncing Tetrahedron')
 plt.legend()
 plt.show()
 
 print("Length of KE_list: ", len(KE_list))
-
-
-

@@ -4,11 +4,17 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 # Constants
-g = np.array([0.0, 0.0, -9.81])  # Gravity
+g = np.array([0.0, 0.0, 0.0])  # Gravity set to zero for breathing cube visualization
 dt = 0.0001
 k = 1000.0  # Spring constant
 L0 = 1.0  # Rest length of the spring
 damping = 0.999  # Damping constant
+
+# Breathing cube constants
+a = 1.0  # Base length
+b = 0.05  # Amplitude of the breathing oscillation
+omega = 2 * np.pi * 0.05  # Frequency of oscillation (0.5 Hz in this case)
+c = 0  # Phase shift (can be adjusted if needed)
 
 # Mass Definition
 class Mass:
@@ -95,7 +101,13 @@ KE_list = []
 PE_list = []
 TE_list = []
 
+# Add a time variable to track the simulation time
+t = 0.0
+
 def simulation_step(masses, springs, dt):
+    global t  # Declare t as global to update its value
+    t += dt  # Increment simulation time
+
     # Reset forces on each mass
     for mass in masses:
         mass.f = np.zeros(3, dtype=float)
@@ -106,6 +118,8 @@ def simulation_step(masses, springs, dt):
 
     # Calculate spring forces
     for spring in springs:
+        spring.L0 = a + b * np.sin(omega * t + c)  # Update rest length of spring
+
         delta_p = spring.m1.p - spring.m2.p
         delta_length = np.linalg.norm(delta_p)
         direction = delta_p / delta_length
@@ -153,7 +167,7 @@ ax.set_zlim([0, 4])
 ax.set_xlabel('X')
 ax.set_ylabel('Y')  
 ax.set_zlabel('Z')
-ax.set_title('Dropping and Bouncing Cube in 3D')
+ax.set_title('Breathing Cube in 3D')
 
 def init():
     for point in points:
@@ -214,11 +228,8 @@ plt.plot(time_list, PE_list, label='Potential Energy')
 plt.plot(time_list, TE_list, label='Total Energy')
 plt.xlabel('Time (s)')
 plt.ylabel('Energy (J)')
-plt.title('Energy vs Time for a Bouncing Cube')
+plt.title('Energy vs Time for a Breathing Cube')
 plt.legend()
 plt.show()
 
 print("Length of KE_list: ", len(KE_list))
-
-
-
