@@ -4,6 +4,7 @@ import matplotlib.animation as animation
 
 # Define Constants
 GRAVITY = np.array([0.0, -9.81, 0.0])  # Earth gravity in y direction
+dt = 0.01
 
 # Define Data Structures
 
@@ -52,8 +53,6 @@ def simulation_step(mass, dt):
     collision_response(mass)
     mass.F = np.array([0.0, 0.0, 0.0])  # Reset forces for next step
 
-dt = 0.01
-
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 point, = ax.plot([], [], [], 'ro', markersize=12)  # 'ro' means red circles
@@ -61,9 +60,9 @@ ax.set_xlim([-1, 1])
 ax.set_ylim([-1, 1])
 ax.set_zlim([0, 11])
 ax.set_xlabel('X')
-ax.set_ylabel('Z')
-ax.set_zlabel('Y')  # In this case, we're treating Y as up
-ax.set_title('Dropping and Bouncing Cube in 3D')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')  # In this case, we're treating Y as up
+ax.set_title('Dropping and Bouncing Ball in 3D')
 
 positions = []
 
