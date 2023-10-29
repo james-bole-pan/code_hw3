@@ -5,8 +5,9 @@ import matplotlib.animation as animation
 # Constants
 g = np.array([0.0, 0.0, -9.81])  # Gravity
 dt = 0.01
-k = 100.0  # Spring constant
+k = 1000.0  # Spring constant
 L0 = 1.0  # Rest length of the spring
+damping = 0.99  # Damping constant
 
 # Mass Definition
 class Mass:
@@ -82,7 +83,7 @@ def simulation_step(masses, springs, dt):
         # Simple collision with the ground
         if mass.p[2] < -half_L0:
             mass.p[2] = -half_L0
-            mass.v[2] = -0.8 * mass.v[2]  # Some damping on collision
+            mass.v[2] = -damping * mass.v[2]  # Some damping on collision
 
 # Visualization setup
 fig = plt.figure()
